@@ -4,14 +4,13 @@ import cairo
 gi.require_version("Gtk", "3.0")
 gi.require_version("PangoCairo", "1.0")
 
-from gi.repository import Gtk, Pango, Gdk
+from gi.repository import Gtk, Pango, Gdk, GLib
 
 class MirrorLabel(Gtk.DrawingArea):
     def __init__(self, text):
         super().__init__()
         self.text = text
         self.letter_spacing = 20 * Pango.SCALE  # Расстояние между буквами (10 пикселей)
-
         self.set_size_request(-1, -1)
         
     def set_text(self, text):
@@ -44,7 +43,7 @@ class MirrorLabel(Gtk.DrawingArea):
         cr.save()
         cr.translate(width, 0)
         cr.scale(-1, 1)
-        cr.set_source_rgb(1, 1, 1)  # Белый текст
+        cr.set_source_rgb(0.1, 0.1, 0.1)  # Белый текст
         cr.move_to((width - text_width)/2, (height - text_height)/2)
         PangoCairo.show_layout(cr, layout)
         cr.restore()
@@ -58,8 +57,7 @@ class FullscreenWindow(Gtk.Window):
         
         # Текущий язык (0=английский, 1=русский, 2=корейский)
         self.current_lang = 0
-        self.languages = ["Eng", "Рус", "한국인"]
-        self.texts = ["CBYI", "СИНШ", "신쉬"]
+        self.texts = ["CBYI", "СИНШ", "ㅊㅠㅛㅑ"]
         
         # Основной вертикальный контейнер
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -73,35 +71,25 @@ class FullscreenWindow(Gtk.Window):
         self.label = MirrorLabel(self.texts[self.current_lang])
         text_box.pack_start(self.label, True, True, 0)
         
-        # Контейнер для кнопки (с отступом снизу)
-        button_box = Gtk.Box()
-        main_box.pack_end(button_box, False, False, 20)  # отступ 20px снизу
-        
-        # Кнопка переключения языка
-        self.lang_button = Gtk.Button(label=self.languages[self.current_lang])
-        self.lang_button.connect("clicked", self.on_lang_button_clicked)
-        
-        # Стиль кнопки
-        self.lang_button.set_margin_bottom(20)
-        button_box.pack_start(self.lang_button, False, False, 0)
-        
-        # Центрирование кнопки
-        button_box.set_halign(Gtk.Align.CENTER)
-        
         # Черный фон окна
         self.override_background_color(Gtk.StateFlags.NORMAL, 
                                       Gdk.RGBA(0, 0, 0, 1))
         
         # Подключение обработчика закрытия окна
         self.connect("destroy", Gtk.main_quit)
-    
-    def on_lang_button_clicked(self, button):
-        # Переключение языка
-        self.current_lang = (self.current_lang + 1) % len(self.languages)
         
-        # Обновление текста и кнопки
+        # Запускаем таймер для автоматического переключения языков
+        self.timeout_id = GLib.timeout_add_seconds(5, self.rotate_language)
+    
+    def rotate_language(self):
+        # Переключение языка
+        self.current_lang = (self.current_lang + 1) % len(self.texts)
+        
+        # Обновление текста
         self.label.set_text(self.texts[self.current_lang])
-        button.set_label(self.languages[self.current_lang])
+        
+        # Возвращаем True, чтобы таймер продолжал работать
+        return True
 
 # Добавляем необходимые импорты
 from gi.repository import PangoCairo
