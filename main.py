@@ -39,14 +39,10 @@ class MirrorLabel(Gtk.DrawingArea):
         height = self.get_allocated_height()
         text_width, text_height = layout.get_pixel_size()
 
-        # Зеркальное отображение
-        cr.save()
-        cr.translate(width, 0)
-        cr.scale(-1, 1)
+        # Обычное отображение текста (без зеркалирования)
         cr.set_source_rgb(0.1, 0.1, 0.1)  # Белый текст
         cr.move_to((width - text_width)/2, (height - text_height)/2)
         PangoCairo.show_layout(cr, layout)
-        cr.restore()
 
 class FullscreenWindow(Gtk.Window):
     def __init__(self):
@@ -57,7 +53,7 @@ class FullscreenWindow(Gtk.Window):
         
         # Текущий язык (0=английский, 1=русский, 2=корейский)
         self.current_lang = 0
-        self.texts = ["CBYI", "СИНШ", "ㅊㅠㅛㅑ"]
+        self.texts = ["KTChH", "КТЧХ", "김치 떡볶이 잡채 호떡"]
         
         # Основной вертикальный контейнер
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
